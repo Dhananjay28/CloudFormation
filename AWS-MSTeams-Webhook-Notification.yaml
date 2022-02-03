@@ -78,7 +78,7 @@ Resources:
                   "@context": "https://schema.org/extensions",
                   "@type": "MessageCard",
                   "themeColor": color,
-                  "text": "Herc Rentals",
+                  "text": "TitleText",
                   "title": title,
                   "sections": [{
                       "facts": [{
