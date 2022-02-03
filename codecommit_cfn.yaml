@@ -1,0 +1,70 @@
+#-----------------------------------------------------------------------------
+# Template to create a commit repository and notification trigger 
+#-----------------------------------------------------------------------------
+AWSTemplateFormatVersion: '2010-09-09'
+Description: The AWS CloudFormation template for CodeBuild and Codepipeline
+#-----------------------------------------------------------------------------
+# Parameters
+#-----------------------------------------------------------------------------
+Parameters:
+  Environment:
+    Description: 'Environment: dev,qa,stg,prod' 
+    Type: String
+    Default: 'qa'
+    AllowedValues:
+      - dev
+      - qa
+      - stg
+      - prod
+    ConstraintDescription: must be either 'dev','qa','stg' or 'prod'
+
+  S3BucketName:
+    Description: The S3 bucket that contains the application code.
+    Type: String
+    Default: 'bucket_name'
+
+  S3BucketKey:
+    Description: The S3 bucket that contains the application code.
+    Type: String
+    Default: 'folder/file_name'
+#-----------------------------------------------------------------------------
+# Resources
+#-----------------------------------------------------------------------------
+Resources:
+  CodeCommitRepo:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: 
+        'Fn::Join':
+            - '-'
+            - - Ref: Environment
+              - RepoName
+      RepositoryDescription: This is a repository for my project with code from MySourceCodeBucket.
+      Tags: 
+        - Key: "Environment"
+          Value: 
+              Ref: Environment         
+        - Key: "ResourceType"
+          Value: "AWS Code Commit"
+        - Key: "Name"
+          Value: 
+            'Fn::Join':
+              - '-'
+              - - Ref: Environment
+                - RepoName
+      Triggers:
+        -
+          Branches: 
+            - BranchName1 
+            - BranchName1
+          CustomData: CodeCommittrigger
+          DestinationArn: !Sub arn:aws:sns:us-east-2:${AWS::AccountId}:sns_topicname
+          Events: 
+            - all
+          Name: codecommittrigger
+      Code:
+        S3Bucket: 
+          Ref: S3BucketName
+        S3Key: 
+          Ref: S3BucketKey
+      
