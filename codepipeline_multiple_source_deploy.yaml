@@ -1,0 +1,225 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: The AWS CloudFormation template for Codepipeline
+Parameters:
+  Environment:
+    Description: 'Environment: dev,qa,stg,prod' 
+    Type: String
+    Default: 'qa'
+    AllowedValues:
+      - dev
+      - qa
+      - stg
+      - prod
+    ConstraintDescription: must be either 'dev','qa','stg' or 'prod'
+
+Resources:
+  telematicsmaceligibleequipmentdetailsCodePipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      Name: 
+        'Fn::Join':
+            - '-'
+            - - Ref: Environment
+              - multiple-source-deploy-pipeline
+      Tags: 
+        - Key: "Environment"
+          Value: 
+              Ref: Environment         
+        - Key: "ResourceType"
+          Value: "AWS CodePipeline"
+      
+      RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/RoleArn
+      ArtifactStore:
+        Location: location
+        Type: S3
+              
+      Stages:
+          - 
+            Name: Source
+            Actions:
+              -
+                Name: Source1
+                ActionTypeId:
+                  Category: Source 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CodeCommit
+                OutputArtifacts: 
+                  -
+                    Name: SourceArtifact1
+                Configuration:
+                  BranchName: branch
+                  RepositoryName: repository
+                  PollForSourceChanges: false
+                  OutputArtifactFormat: CODE_ZIP
+                Namespace: SourceVariables1
+                RunOrder: 1
+
+              -
+                  Name: Source2
+                  ActionTypeId:
+                    Category: Source 
+                    Owner: AWS 
+                    Version: 1 
+                    Provider: CodeCommit
+                  OutputArtifacts: 
+                    -
+                      Name: SourceArtifact2
+                  Configuration:
+                    BranchName: branch
+                    RepositoryName: repository2
+                    PollForSourceChanges: false
+                    OutputArtifactFormat: CODE_ZIP
+                  Namespace: SourceVariables2
+                  RunOrder: 1
+
+              -
+                Name: Source3
+                ActionTypeId:
+                  Category: Source 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CodeCommit
+                OutputArtifacts: 
+                  -
+                    Name: SourceArtifact3 
+                Configuration:
+                  BranchName: branch
+                  RepositoryName: repository3
+                  PollForSourceChanges: false
+                  OutputArtifactFormat: CODE_ZIP
+                Namespace: SourceVariables3
+                RunOrder: 1
+
+              -
+                Name: SourceN
+                ActionTypeId:
+                  Category: Source 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CodeCommit
+                OutputArtifacts: 
+                  -
+                    Name: SourceArtifactN
+                Configuration:
+                  BranchName: branch
+                  RepositoryName: RepoN
+                  PollForSourceChanges: false
+                  OutputArtifactFormat: CODE_ZIP
+                Namespace: SourceVariablesN
+                RunOrder: 1
+
+              
+          - 
+            Name: Approval
+            Actions:
+              -
+                Name: Approval
+                RunOrder: 2
+                ActionTypeId:
+                  Category: Approval 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: Manual
+                Configuration:
+                  CustomData: "Requesting approval"
+
+          - 
+            Name: QaDeploy
+            Actions:
+              -
+                Name: QaDeploy1
+                Region: us-east-1
+                RunOrder: 3
+                ActionTypeId:
+                  Category: Deploy 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CloudFormation
+                InputArtifacts: 
+                  -
+                    Name: SourceArtifact1
+                Namespace: DeployVariables1
+                Configuration:
+                  ActionMode: CREATE_UPDATE
+                  StackName: 
+                    'Fn::Join':
+                      - '-'
+                      - - Ref: Environment
+                        - telematics-lambdastack-name
+                  Capabilities: CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/Role
+                  TemplatePath: SourceArtifact1::filename.yaml
+          
+              -
+                Name: QaDeploy2
+                Region: us-east-1
+                RunOrder: 3
+                ActionTypeId:
+                  Category: Deploy 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CloudFormation
+                InputArtifacts: 
+                  -
+                    Name: SourceArtifact2
+                Namespace: DeployVariables2
+                Configuration:
+                  ActionMode: CREATE_UPDATE
+                  StackName: 
+                    'Fn::Join':
+                      - '-'
+                      - - Ref: Environment
+                        - telematics-lambdastack-name2
+                  Capabilities: CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/Role
+                  TemplatePath: SourceArtifact2::filename2.yaml
+
+              -
+                Name: QaDeploy3
+                Region: us-east-1
+                RunOrder: 3
+                ActionTypeId:
+                  Category: Deploy 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CloudFormation
+                InputArtifacts: 
+                  -
+                    #Name: BuildArtifact
+                    Name: SourceArtifact3
+                Namespace: DeployVariables3
+                Configuration:
+                  ActionMode: CREATE_UPDATE
+                  StackName: 
+                    'Fn::Join':
+                      - '-'
+                      - - Ref: Environment
+                        - telematics-lambdastack-name3
+                  Capabilities: CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/Role
+                  TemplatePath: SourceArtifact3::filename3.yaml
+
+              -
+                Name: QaDeployN
+                Region: us-east-1
+                RunOrder: 3
+                ActionTypeId:
+                  Category: Deploy 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CloudFormation
+                InputArtifacts: 
+                  -
+                    Name: SourceArtifactN
+                Namespace: DeployVariablesN
+                Configuration:
+                  ActionMode: CREATE_UPDATE
+                  StackName: 
+                    'Fn::Join':
+                      - '-'
+                      - - Ref: Environment
+                        - telematics-lambdastack-geofencedispatcher
+                  Capabilities: CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/Role
+                  TemplatePath: SourceArtifact4::filenameN.yaml
