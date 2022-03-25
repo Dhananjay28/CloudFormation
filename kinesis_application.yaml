@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Kinesis application Template
+Parameters:
+  Environment:
+    Description: 'Environment: dev,qa,stg,prod' 
+    Type: String
+    Default: 'qa'
+    AllowedValues:
+      - dev
+      - qa
+      - stg
+      - prod
+    ConstraintDescription: must be either 'dev','qa','stg' or 'prod'
+
+  S3BucketName:
+    Description: The S3 bucket that contains the application code.
+    Type: String
+    Default: 's3bucket'
+
+  S3BucketKey:
+    Description: The S3 bucket that contains the application code.
+    Type: String
+    Default: 's3bucket/jar_file.jar'
+
+  
+Resources:
+
+  AppLoggingConfig:
+    Type: AWS::KinesisAnalyticsV2::ApplicationCloudWatchLoggingOption
+    DependsOn: 
+      - AppAlertsLogStream
+      - AppLogGroup
+    Properties:
+      ApplicationName: !Ref KineissAnalyticsApplication
+      CloudWatchLoggingOption:
+        LogStreamARN: 
+          'Fn::Join': 
+            - ':' 
+            - - 'arn:aws:logs' 
+              - !Ref 'AWS::Region' 
+              - !Ref 'AWS::AccountId' 
+              - log-group 
+              - !Ref AppLogGroup 
+              - log-stream 
+              - !Ref AppAlertsLogStream
+
+
+  AppAlertsLogStream:
+    Type: AWS::Logs::LogStream
+    DependsOn: AppLogGroup
+    Properties: 
+      LogGroupName: !Ref AppLogGroup
+
+  AppLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        'Fn::Join':
+          - '-'
+          - - Ref: Environment
+            - loggroup
+      RetentionInDays: 30
+      
+
+  KineissAnalyticsApplication:
+    Type: AWS::KinesisAnalyticsV2::Application
+    Properties:
+      ApplicationName:
+        'Fn::Join':
+          - '-'
+          - - Ref: Environment
+            - app-name
+      RuntimeEnvironment: FLINK-1_11
+      ServiceExecutionRole: !Sub arn:aws:iam::${AWS::AccountId}:role/KinesisRole
+      ApplicationConfiguration:
+        ApplicationCodeConfiguration:
+          CodeContent:
+            S3ContentLocation:
+              BucketARN: "arn:aws:s3:::s3bucket"
+              FileKey: 
+                Ref: S3BucketKey
+          CodeContentType: 'ZIPFILE'
+        EnvironmentProperties:
+          PropertyGroups:
+            - PropertyGroupId: PropertyGroupId1
+              PropertyMap:
+                {
+                  Key1: Value1,
+                  Key2: Value2
+                }
+            - PropertyGroupId: PropertyGroupId2
+              PropertyMap:
+                {
+                  Key1: Value1,
+                  Key2: Value2
+                }
