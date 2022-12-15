@@ -146,7 +146,7 @@ Resources:
                     'Fn::Join':
                       - '-'
                       - - Ref: Environment
-                        - telematics-lambdastack-name
+                        - lambdastack-name
                   Capabilities: CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/Role
                   TemplatePath: SourceArtifact1::filename.yaml
@@ -170,7 +170,7 @@ Resources:
                     'Fn::Join':
                       - '-'
                       - - Ref: Environment
-                        - telematics-lambdastack-name2
+                        - lambdastack-name2
                   Capabilities: CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/Role
                   TemplatePath: SourceArtifact2::filename2.yaml
@@ -195,7 +195,7 @@ Resources:
                     'Fn::Join':
                       - '-'
                       - - Ref: Environment
-                        - telematics-lambdastack-name3
+                        - lambdastack-name3
                   Capabilities: CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/Role
                   TemplatePath: SourceArtifact3::filename3.yaml
@@ -219,7 +219,7 @@ Resources:
                     'Fn::Join':
                       - '-'
                       - - Ref: Environment
-                        - telematics-lambdastack-geofencedispatcher
+                        - lambdastack
                   Capabilities: CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/Role
                   TemplatePath: SourceArtifact4::filenameN.yaml
